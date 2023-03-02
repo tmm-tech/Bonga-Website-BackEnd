@@ -1,14 +1,12 @@
-
-
 -- Create the database
 CREATE DATABASE bonga_website;
-
+GO
 -- Use the database
 USE bonga_website;
 
 -- CREATE SCHEMA
-CREATE SCHEMA bonga
-
+CREATE SCHEMA bonga;
+GO
 -- Create the users table
 CREATE TABLE bonga.users (
     user_id INT PRIMARY KEY,
@@ -19,13 +17,14 @@ CREATE TABLE bonga.users (
     profile_image_url VARCHAR(255) NOT NULL,
     passwords VARCHAR(255) NOT NULL,
 );
-
 -- Create the posts table
 CREATE TABLE bonga.posts (
     post_id INT PRIMARY KEY,
     user_id INT NOT NULL,
     post_content TEXT NOT NULL,
     media_url VARCHAR(255) NOT NULL,
+    likes INT DEFAULT 0,
+    comments INT DEFAULT 0,
     created_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES bonga.users(user_id)
 );
