@@ -1,0 +1,19 @@
+{
+  "name": "bonga-website-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmm-tech/Bonga-Website-BackEnd.git"
+  },
+  "author": "team alpha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tmm-tech/Bonga-Website-BackEnd/issues"
+  },
+  "homepage": "https://github.com/tmm-tech/Bonga-Website-BackEnd#readme"
+}
