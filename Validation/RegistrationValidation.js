@@ -27,4 +27,7 @@ const registrationSchema = Joi.object({
     })
 }).xor('email', 'phone');
 
-module.exports = registrationSchema;
+const validateCreateUserSchema = (payload) => {
+    return createUserSchema.validateAsync(payload, { abortEarly: false })
+}
+module.exports = validateCreateUserSchema

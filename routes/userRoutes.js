@@ -21,6 +21,6 @@ userRoutes.delete('/User/:id', SoftDeleteUser)
     //update items
 userRoutes.put('/Users', updateUser)
     // login a user
-userRoutes.get('/User/:id', loginUser)
+userRoutes.get('/User/', loginUser)
 
 module.exports = userRoutes

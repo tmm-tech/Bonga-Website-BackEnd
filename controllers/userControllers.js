@@ -1,9 +1,10 @@
 const sql = require('mssql');
 const bcrypt = require('bcrypt');
 const { config } = require('../sqlconfig');
-const validateCreateUserSchema = require('../model/usersSchema')
+const jwt = require('jsonwebtoken');
+const validateCreateUserSchema = require('../Validation/RegistrationValidation')
 const { getUser } = require('../services/getUserService')
-const { createToken, verifyToken } = require('../services/jwtServices')
+
 module.exports = {
     getAllTheUsers: async(req, res) => {
         try {
@@ -24,7 +25,7 @@ module.exports = {
             let hashed_pwd = await bcrypt.hash(value.password, 8)
 
             await sql.connect(config);
-            let results = await sql.query `INSERT INTO bonga.users VALUES (${value.fullname},${value.username},${value.email},${value.phone_number},${value.profile}${hashed_pwd},1,0)`
+            let results = await sql.query `INSERT INTO bonga.users VALUES (${value.fullname},${value.username},${value.email},${value.phone_number},${value.profile}${hashed_pwd},0,1)`
             console.log(results);
             users.push(results);
             res.json(users)
@@ -34,20 +35,27 @@ module.exports = {
         }
     },
     loginUser: async(req, res) => {
-        //implementation of loginusing bcrypt
-        let credentials = req.body;
-        let user = await this.getUser(credentials.id)
-        if (user) {
-            let match = await bcrypt.compare(credentials.password, user.password)
-            let token = await createToken({ full_names: user.full_names, id: user.id })
-            if (match) {
+        const { email, password } = req.body;
 
-                res.json({ success: true, message: 'login successful', token })
+        try {
+            await sql.connect(config);
+            const result = await sql.query `SELECT * FROM bonga.users WHERE email = ${email}`;
+            if (result.recordset.length > 0) {
+                const user = result.recordset[0];
+                const match = await bcrpyt.compare(password, user.password);
+                if (match) {
+                    const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET);
+                    await sql.query `UPDATE bonga.users SET Status = 1 WHERE  id = ${user.id}`;
+                    res.json({ success: true, token });
+                } else {
+                    res.status(401).json({ success: false, message: 'Invalid email or password' });
+                }
             } else {
-                res.json({ success: false, message: 'check your credentials' })
+                res.status(401).json({ success: false, message: 'Invalid email or password' });
             }
-        } else {
-            res.status(404).json({ message: "user doesn't exist" })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: 'Error logging in' });
         }
     },
     getAUser: async(req, res) => {
@@ -82,6 +90,18 @@ module.exports = {
             if (results.rowsAffected.length) res.json({ success: true, message: 'user deleted successfully' })
         } catch (error) {
             console.log(error)
+        }
+
+    },
+    Logout: async(req, res) => {
+        const { id } = req.params
+        try {
+            await sql.connect(config);
+            let results = await sql.query `UPDATE bonga.users SET Status = 0 WHERE id = ${id}`;
+            res.status(500).json({ success: true, message: 'successfully logged out' });
+        } catch (error) {
+            console.log(error)
+            res.status(401).json({ success: false, message: 'Error logging out' })
         }
 
     }
