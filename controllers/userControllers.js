@@ -22,10 +22,10 @@ module.exports = {
             // validate <datalist>
             let value = await validateCreateUserSchema(details)
                 // bcrypt asynchronous
-            let hashed_pwd = await bcrypt.hash(value.password, 8)
+            let hashed_pwd = await bcrypt.hash(value.passwords, 8)
 
             await sql.connect(config);
-            let results = await sql.query `INSERT INTO bonga.users VALUES (${value.fullname},${value.username},${value.email},${value.phone_number},${value.profile}${hashed_pwd},0,1)`
+            let results = await sql.query `INSERT INTO bonga.users VALUES (${value.full_name},${value.username},${value.email},${value.phone_number},${value.profile}${hashed_pwd},0,1)`
             console.log(results);
             users.push(results);
             res.json(users)
@@ -35,17 +35,17 @@ module.exports = {
         }
     },
     loginUser: async(req, res) => {
-        const { email, password } = req.body;
+        const { email, passwords } = req.body;
 
         try {
             await sql.connect(config);
             const result = await sql.query `SELECT * FROM bonga.users WHERE email = ${email}`;
             if (result.recordset.length > 0) {
                 const user = result.recordset[0];
-                const match = await bcrpyt.compare(password, user.password);
+                const match = await bcrpyt.compare(passwords, user.passwords);
                 if (match) {
-                    const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET);
-                    await sql.query `UPDATE bonga.users SET Status = 1 WHERE  id = ${user.id}`;
+                    const token = jwt.sign({ id: user.user_id, email: user.email }, process.env.SECRET);
+                    await sql.query `UPDATE bonga.users SET Status = 1 WHERE  id = ${user.user_id}`;
                     res.json({ success: true, token });
                 } else {
                     res.status(401).json({ success: false, message: 'Invalid email or password' });
